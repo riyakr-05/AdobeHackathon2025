@@ -1,7 +1,7 @@
 # Use a slim Python base image compatible with AMD64
 # python:3.9-slim-bullseye is a common and relatively small base.
 # --platform=linux/amd64 ensures it targets the required architecture for the hackathon.
-FROM --platform=linux/amd64 python:3.9-slim-bullseye
+FROM python:3.9-slim-bullseye 
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -17,6 +17,7 @@ RUN apt-get update && \
     poppler-utils \
     tesseract-ocr \
     tesseract-ocr-eng \
+    libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy your requirements.txt first to leverage Docker's build cache.
@@ -25,7 +26,9 @@ COPY requirements.txt .
 
 # Install Python dependencies listed in requirements.txt.
 # --no-cache-dir helps keep the image smaller.
-RUN pip install --no-cache-dir -r requirements.txt
+# Upgrade pip first
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+
 
 # Copy your Python application code into the container
 COPY process_pdfs.py .
@@ -34,4 +37,4 @@ COPY process_pdfs.py .
 # This command will automatically be executed by the Docker runtime.
 # Your main.py script is designed to process files from /app/input
 # and save results to /app/output as per hackathon requirements.
-CMD ["python", "processes_pdfs.py"]
+CMD ["python", "process_pdfs.py"]
